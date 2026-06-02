@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kevin Maresca — Power Engineer & Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #070B14;
+      --bg2:       #0C1120;
+      --bg3:       #111827;
+      --surface:   rgba(255,255,255,0.04);
+      --border:    rgba(255,255,255,0.07);
+      --mint:      #00FFB3;
+      --mint-dim:  rgba(0,255,179,0.12);
+      --orange:    #FF6B35;
+      --orange-dim:rgba(255,107,53,0.12);
+      --blue:      #4F9EFF;
+      --text:      #E8EDF5;
+      --text-mid:  #8B95A8;
+      --text-dim:  #3D4A5C;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'Bricolage Grotesque', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --nav-h:     64px;
+      --ease:      cubic-bezier(0.16,1,0.3,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; -webkit-font-smoothing: antialiased; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--text); overflow-x: hidden; cursor: none; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button { font-family: var(--font-body); cursor: none; }
+
+    /* ── Cursor ──────────────────────────────────────────── */
+    .cursor {
+      position: fixed; z-index: 9999; pointer-events: none;
+      width: 8px; height: 8px;
+      background: var(--mint); border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width .2s var(--ease), height .2s var(--ease);
+    }
+    .cursor-ring {
+      position: fixed; z-index: 9998; pointer-events: none;
+      width: 32px; height: 32px;
+      border: 1px solid rgba(0,255,179,0.4); border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width .15s var(--ease), height .15s var(--ease), border-color .15s;
+    }
+
+    /* ── Noise ───────────────────────────────────────────── */
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.025;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      transition: background .3s;
+    }
+    nav.scrolled { background: rgba(7,11,20,0.88); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: var(--font-head); font-size: 0.88rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    .nav-logo span { color: var(--mint); }
+    .nav-links { display: flex; gap: 28px; list-style: none; font-size: 0.76rem; font-weight: 500; }
+    .nav-links a { color: var(--text-mid); transition: color .2s; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; right: 0; height: 1px; background: var(--mint); transform: scaleX(0); transition: transform .25s var(--ease); }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+    .nav-cta { display: flex; align-items: center; gap: 8px; padding: 8px 18px; border: 1px solid rgba(0,255,179,0.3); border-radius: 2px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; color: var(--mint); transition: all .2s; }
+    .nav-cta:hover { background: var(--mint-dim); border-color: var(--mint); }
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; }
+
+    /* ── Reveal ──────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .65s var(--ease), transform .65s var(--ease); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .32s; }
+    .reveal-delay-4 { transition-delay: .46s; }
+    .reveal-right { opacity: 0; transform: translateX(40px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    /* ── Shared ──────────────────────────────────────────── */
+    section { position: relative; }
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 48px; }
+    .section-tag { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mint); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .section-tag::before { content: ''; width: 24px; height: 1px; background: var(--mint); flex-shrink: 0; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; border-radius: 2px; transition: all .2s var(--ease); cursor: none; }
+    .btn-primary { background: var(--mint); color: var(--bg); }
+    .btn-primary:hover { background: #33ffc4; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,255,179,0.25); }
+    .btn-outline { border: 1px solid var(--border); color: var(--text-mid); }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.3); color: var(--text); background: var(--surface); }
+
+    /* ════════════════════════════════════════════════
+       HERO
+    ════════════════════════════════════════════════ */
+    #hero { min-height: 100vh; position: relative; overflow: hidden; }
+    #hero::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0,255,179,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,255,179,0.03) 1px,transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 90% 80% at 40% 50%, black, transparent);
+    }
+    #hero::after {
+      content: ''; position: absolute; top: 10%; left: 30%; width: 700px; height: 600px;
+      background: radial-gradient(ellipse, rgba(0,255,179,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    /* Two-column grid — text left, code right. No overlap possible. */
+    .hero-outer {
+      max-width: 1160px; margin: 0 auto; padding: 0 48px;
+      min-height: 100vh; padding-top: var(--nav-h);
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      column-gap: 64px;
+      align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-inner { padding: 80px 0 60px; }
+    .hero-eyebrow { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mint); margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+    .hero-eyebrow-dot { width: 6px; height: 6px; background: var(--mint); border-radius: 50%; box-shadow: 0 0 10px var(--mint); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 8px var(--mint)} 50%{opacity:.5;box-shadow:0 0 20px var(--mint)} }
+    .hero-name { font-family: var(--font-head); font-size: clamp(3rem, 6.5vw, 5.5rem); font-weight: 800; line-height: 1; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .hero-name .line2 { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.28); }
+    .hero-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+    .hero-title { font-family: var(--font-head); font-size: clamp(0.85rem, 1.8vw, 1.1rem); font-weight: 600; color: var(--text-mid); }
+    .hero-title-sep { width: 4px; height: 4px; background: var(--orange); border-radius: 50%; flex-shrink: 0; }
+    .hero-desc { font-size: 1rem; line-height: 1.8; color: var(--text-mid); margin-bottom: 40px; }
+    .hero-desc + .hero-desc { margin-top: -28px; }
+    .hero-desc strong { color: var(--text); font-weight: 500; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 72px; }
+    .hero-stats { display: flex; gap: 44px; flex-wrap: wrap; }
+    .hero-stat-num { font-family: var(--font-head); font-size: 2rem; font-weight: 800; line-height: 1; }
+    .hero-stat-num span { color: var(--mint); }
+    .hero-stat-label { font-size: 0.72rem; color: var(--text-mid); margin-top: 4px; }
+
+    /* Code float — right grid column, no absolute position, no overlap */
+    .hero-code-float {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; font-family: var(--font-mono); font-size: 0.7rem;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,255,179,0.05);
+      transform: rotate(1.5deg);
+      transition: transform .4s var(--ease);
+    }
+    .hero-code-float:hover { transform: rotate(0deg); }
+    .hcf-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+    .hcf-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .hcf-filename { font-size: 0.62rem; color: var(--text-dim); margin-left: 6px; transition: opacity .3s; }
+    .hcf-body { line-height: 2; height: 280px; position: relative; overflow: hidden; padding: 16px 18px; }
+    .code-snippet { position: absolute; inset: 0; padding: 18px 20px 20px; opacity: 0; transition: opacity .4s; }
+    .code-snippet.active { opacity: 1; }
+    .c-kw   { color: #C778DD; }
+    .c-fn   { color: #61AFEF; }
+    .c-str  { color: #98C379; }
+    .c-num  { color: var(--orange); }
+    .c-mint { color: var(--mint); }
+    .c-comment { color: #4A5568; font-style: italic; }
+    .c-dim  { color: var(--text-dim); }
+    .type-cursor {
+      display: inline-block; width: 2px; height: 1.1em;
+      background: var(--mint); vertical-align: text-bottom;
+      animation: blink .7s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ════════════════════════════════════════════════
+       ABOUT
+    ════════════════════════════════════════════════ */
+    #about { padding: 120px 0; border-top: 1px solid var(--border); }
+    .about-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; align-items: start; }
+    .about-left h2 { font-family: var(--font-head); font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 22px; }
+    .about-left h2 em { font-style: normal; color: var(--mint); }
+    .about-left p { font-size: 0.95rem; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; max-width: 600px; }
+    .about-left p strong { color: var(--text); font-weight: 500; }
+    .about-identity-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+    .id-card { display: flex; align-items: flex-start; gap: 14px; padding: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; transition: border-color .2s, background .2s; }
+    .id-card:hover { border-color: rgba(0,255,179,0.2); background: rgba(0,255,179,0.03); }
+    .id-card-icon { width: 38px; height: 38px; flex-shrink: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .id-card-icon.eng { background: rgba(79,158,255,0.12); }
+    .id-card-icon.code { background: var(--mint-dim); }
+    .id-card h4 { font-family: var(--font-head); font-size: 0.85rem; font-weight: 700; margin-bottom: 3px; }
+    .id-card p { font-size: 0.76rem; color: var(--text-mid); line-height: 1.5; margin: 0; }
+    .about-right { padding-top: 44px; }
+    .skill-category { margin-bottom: 28px; }
+    .skill-category-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 9px; }
+    .skill-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill { padding: 4px 11px; font-size: 0.73rem; font-weight: 500; border-radius: 99px; border: 1px solid var(--border); color: var(--text-mid); transition: all .18s; }
+    .pill:hover { border-color: var(--mint); color: var(--mint); background: var(--mint-dim); }
+    .pill.eng { border-color: rgba(79,158,255,0.25); color: var(--blue); background: rgba(79,158,255,0.06); }
+    .pill.code { border-color: rgba(0,255,179,0.2); color: var(--mint); background: var(--mint-dim); }
+
+    /* ════════════════════════════════════════════════
+       JOURNEY + PROJECTS (merged vertical)
+    ════════════════════════════════════════════════ */
+    #work { padding: 120px 0; border-top: 1px solid var(--border); position: relative; }
+    .work-header { margin-bottom: 80px; }
+    .work-header h2 { font-family: var(--font-head); font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+    .work-header h2 em { font-style: normal; color: var(--mint); }
+    .work-header p { font-size: 0.92rem; color: var(--text-mid); line-height: 1.7; max-width: 640px; margin-top: 14px; }
+
+    /*
+     * Layout: .work-body is the positioning context.
+     * The rail is placed in the page's left margin, well outside the container,
+     * so its vertical line and dots align with the left page edge — not the
+     * container edge. The entries take the full container width unaffected.
+     */
+    .work-body { position: relative; }
+
+    /* Rail sits in the far-left margin outside the container */
+    .tl-rail {
+      position: absolute;
+      /* align the rail's right edge (the dot/line) with container left - 48px gap */
+      left: -200px;
+      width: 180px;
+      top: 0; bottom: 0;
+      pointer-events: none;
+    }
+    .tl-rail-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      right: 0;
+      width: 1px;
+      background: linear-gradient(180deg, transparent 0%, var(--mint) 6%, var(--mint) 94%, transparent 100%);
+      opacity: 0.15;
+    }
+    .tl-rail-sticky {
+      position: sticky;
+      top: calc(var(--nav-h) + 32px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0;
+    }
+    .tl-year-marker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 52px;
+    }
+    .tl-year-num {
+      font-family: var(--font-head);
+      font-size: 1rem; font-weight: 800;
+      color: var(--text-dim);
+      transition: color .3s;
+      line-height: 1;
+    }
+    .tl-year-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--text-dim);
+      background: var(--bg);
+      flex-shrink: 0;
+      margin-right: -5px;
+      transition: border-color .3s, background .3s, box-shadow .3s;
+    }
+    .tl-year-marker.active .tl-year-num { color: var(--mint); }
+    .tl-year-marker.active .tl-year-dot {
+      border-color: var(--mint); background: var(--mint);
+      box-shadow: 0 0 0 4px rgba(0,255,179,0.18), 0 0 14px rgba(0,255,179,0.35);
+    }
+
+    /* Entries — take full container width */
+    .work-entries { display: flex; flex-direction: column; gap: 0; }
+
+    .work-entry {
+      padding: 48px 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 40px;
+      align-items: start;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity .7s var(--ease), transform .7s var(--ease);
+    }
+    .work-entry:last-child { border-bottom: none; }
+    .work-entry.in-view { opacity: 1; transform: translateY(0); }
+
+    /* Year badge in entry */
+    .we-year-badge {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      color: var(--mint);
+      background: var(--mint-dim);
+      border-radius: 3px;
+      padding: 2px 8px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+    .we-year-badge.orange { color: var(--orange); background: var(--orange-dim); }
+
+    .we-left { display: flex; flex-direction: column; }
+    .we-title { font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; line-height: 1.1; }
+    .we-subtitle { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; }
+    .we-desc { font-size: 0.88rem; line-height: 1.75; color: #C8D0DC; margin-bottom: 18px; }
+    .we-desc strong { color: var(--text); font-weight: 600; }
+    .we-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; }
+    .we-tag { padding: 3px 9px; border-radius: 99px; font-size: 0.65rem; font-family: var(--font-mono); border: 1px solid var(--border); color: var(--text-dim); }
+    .we-links { display: flex; gap: 8px; flex-wrap: wrap; }
+    .we-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.72rem; font-weight: 600;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text-mid);
+      transition: all .18s;
+    }
+    .we-link:hover { color: var(--text); border-color: rgba(255,255,255,0.25); background: var(--surface); }
+    .we-link.primary { color: var(--mint); border-color: rgba(0,255,179,0.25); }
+    .we-link.primary:hover { background: var(--mint-dim); border-color: var(--mint); }
+
+    /* Right: iframe/screenshot preview */
+    .we-preview {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      aspect-ratio: 16/10;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .we-preview-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 30px;
+      background: rgba(12,17,32,0.95);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 10px; gap: 5px;
+      z-index: 2;
+    }
+    .we-preview-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .we-preview-url { flex: 1; height: 13px; background: rgba(255,255,255,0.04); border-radius: 3px; margin: 0 8px; }
+    .we-preview iframe {
+      width: 100%; height: 100%;
+      border: none;
+      display: block;
+      /* offset for our fake browser bar */
+      margin-top: 30px;
+      height: calc(100% - 30px);
+      transform-origin: top left;
+      /* scale down to show more content */
+      transform: scale(0.7);
+      width: calc(100% / 0.7);
+      height: calc((100% - 30px) / 0.7);
+      pointer-events: none;
+    }
+    /* Fallback overlay when iframe is blocked */
+    .we-preview-fallback {
+      position: absolute;
+      inset: 30px 0 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      opacity: 0;
+      background: var(--bg2);
+      transition: opacity .3s;
+      z-index: 1;
+    }
+    .we-preview-fallback.show { opacity: 1; }
+    .we-preview-fallback-label { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.1em; }
+
+    /* CSS preview art for fallback */
+    .preview-art { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+    /* Odin */
+    .pa-odin { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+    .pa-odin-grid { display: grid; grid-template-columns: 1fr 2fr; height: 100%; }
+    .pa-odin-sidebar { background: rgba(99,132,218,0.08); border-right: 1px solid rgba(99,132,218,0.12); padding: 12px 8px; display: flex; flex-direction: column; gap: 6px; }
+    .pa-odin-nav-item { height: 10px; border-radius: 2px; background: rgba(255,255,255,0.06); }
+    .pa-odin-nav-item.a { background: rgba(99,132,218,0.3); width: 80%; }
+    .pa-odin-main { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .pa-odin-h { height: 12px; border-radius: 2px; background: rgba(99,132,218,0.3); width: 55%; }
+    .pa-odin-line { height: 6px; border-radius: 2px; background: rgba(255,255,255,0.05); }
+
+    /* Georgetown */
+    .pa-ga { background: linear-gradient(180deg, #8B0000 0%, #1a0000 30%, #0d0000 100%); }
+    .pa-ga-nav { height: 36px; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(196,30,30,0.3); display: flex; align-items: center; padding: 0 12px; gap: 16px; }
+    .pa-ga-logo { width: 60px; height: 14px; background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .pa-ga-navitem { width: 32px; height: 6px; border-radius: 2px; background: rgba(255,255,255,0.1); }
+    .pa-ga-hero { padding: 16px; text-align: center; }
+    .pa-ga-badge { display: inline-block; padding: 4px 12px; background: rgba(196,30,30,0.4); border: 1px solid rgba(196,30,30,0.4); border-radius: 2px; font-family: var(--font-mono); font-size: 0.52rem; color: #ffaaaa; letter-spacing: 0.1em; }
+    .pa-ga-cards { display: flex; gap: 6px; padding: 10px; }
+    .pa-ga-card { flex: 1; height: 44px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; }
+
+    /* Post-it */
+    .pa-piq { background: linear-gradient(135deg, #0d1117, #1a1f2e); display: flex; }
+    .pa-piq-sidebar { width: 28px; background: rgba(13,27,110,0.3); border-right: 1px solid rgba(255,255,255,0.05); }
+    .pa-piq-board { flex: 1; position: relative; }
+    .pa-piq-note { position: absolute; border-radius: 2px; padding: 5px; display: flex; flex-direction: column; gap: 3px; }
+    .pa-piq-noteline { height: 2px; border-radius: 1px; background: rgba(0,0,0,0.18); }
+    .pa-piq-noteline.s { width: 70%; }
+
+    /* CoolMath */
+    .pa-cmg { background: #030308; display: flex; align-items: center; justify-content: center; gap: 14px; }
+    .pa-cmg-cab { width: 70px; border: 1px solid rgba(0,245,255,0.2); border-radius: 5px 5px 2px 2px; overflow: hidden; background: #0e0e24; }
+    .pa-cmg-marquee { height: 16px; background: linear-gradient(135deg,#000088,#00003a); display: flex; align-items: center; justify-content: center; }
+    .pa-cmg-mtext { font-family: var(--font-mono); font-size: 0.38rem; color: #fff; letter-spacing: 2px; }
+    .pa-cmg-screen { margin: 3px; height: 52px; background: #000; position: relative; overflow: hidden; }
+    .pa-cmg-px { position: absolute; width: 4px; height: 4px; }
+    .pa-cmg-btns { padding: 3px; display: flex; justify-content: center; gap: 4px; }
+    .pa-cmg-btn { width: 7px; height: 7px; border-radius: 50%; }
+    .pa-cmg-games { display: flex; flex-direction: column; gap: 4px; }
+    .pa-cmg-game { font-family: var(--font-mono); font-size: 0.48rem; }
+
+    /* WattSure */
+    .pa-ws { background: linear-gradient(135deg, #071217, #0a1e2a); padding: 10px; }
+    .pa-ws-kpis { display: flex; gap: 5px; margin-bottom: 8px; }
+    .pa-ws-kpi { flex: 1; background: rgba(0,255,179,0.05); border: 1px solid rgba(0,255,179,0.1); border-radius: 3px; padding: 4px 5px; }
+    .pa-ws-val { font-family: var(--font-mono); font-size: 0.55rem; color: var(--mint); }
+    .pa-ws-lbl { font-size: 0.45rem; color: var(--text-dim); }
+    .pa-ws-chart { display: flex; align-items: flex-end; gap: 2px; height: 60px; }
+    .pa-ws-bar { flex: 1; border-radius: 1px 1px 0 0; background: rgba(0,255,179,0.25); }
+    .pa-ws-bar.hi { background: rgba(0,255,179,0.6); }
+
+    /* PowerTrader */
+    .pa-pt { background: linear-gradient(135deg, #071a12, #0d2a1a); padding: 10px; }
+    .pa-pt-table { font-family: var(--font-mono); font-size: 0.5rem; }
+    .pa-pt-row { display: flex; justify-content: space-between; padding: 3px 4px; border-radius: 2px; }
+    .pa-pt-row.h { color: var(--text-dim); }
+    .pa-pt-row.up { background: rgba(0,255,179,0.05); }
+    .pa-pt-row.dn { background: rgba(255,107,53,0.05); }
+    .up-c { color: var(--mint); }
+    .dn-c { color: var(--orange); }
+
+    /* InsiderTrader / GridWatch */
+    .pa-it { background: linear-gradient(135deg, #07100a, #0d1f11); padding: 10px; }
+    .pa-it-hdr { font-family: var(--font-mono); font-size: 0.48rem; color: var(--text-dim); letter-spacing: 0.08em; margin-bottom: 6px; }
+    .pa-it-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px; }
+    .pa-it-kpi { background: rgba(0,255,179,0.05); border: 1px solid rgba(0,255,179,0.1); border-radius: 2px; padding: 4px 5px; }
+    .pa-it-kval { font-family: var(--font-mono); font-size: 0.65rem; color: var(--mint); font-weight: 500; }
+    .pa-it-klbl { font-size: 0.43rem; color: var(--text-dim); }
+    .pa-it-row { display: flex; gap: 4px; margin-bottom: 3px; }
+    .pa-it-cell { height: 16px; flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 2px; }
+    .pa-it-cell.ev { flex: 2; display: flex; align-items: center; padding: 0 4px; }
+    .pa-it-ev-text { font-family: var(--font-mono); font-size: 0.43rem; color: var(--mint); }
+
+    /* ════════════════════════════════════════════════
+       WORK MOSAIC (compact bento grid)
+    ════════════════════════════════════════════════ */
+    #mosaic { padding: 0 0 120px; }
+    .mosaic-header { margin-bottom: 32px; }
+    .mosaic-header h3 { font-family: var(--font-head); font-size: 1.3rem; font-weight: 700; color: var(--text-mid); }
+    .mosaic-header h3 em { font-style: normal; color: var(--text); }
+
+    .mosaic-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 44px;
+      gap: 10px;
+    }
+    /* card sizes */
+    .mc { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color .25s, box-shadow .25s, transform .25s var(--ease), background .25s; cursor: none; position: relative; display: block; text-decoration: none; }
+    .mc:hover { border-color: rgba(255,255,255,0.22); box-shadow: 0 12px 40px rgba(0,0,0,0.5); transform: translateY(-3px); }
+    /* Each card gets its accent color as a subtle bg tint on hover via JS-set var */
+    .mc-a:hover { background: rgba(196,30,30,0.08); border-color: rgba(196,30,30,0.3); }
+    .mc-b:hover { background: rgba(99,132,218,0.08); border-color: rgba(99,132,218,0.3); }
+    .mc-c:hover { background: rgba(255,229,92,0.06); border-color: rgba(255,229,92,0.25); }
+    .mc-d:hover { background: rgba(0,245,255,0.06); border-color: rgba(0,245,255,0.25); }
+    .mc-e:hover { background: rgba(0,255,179,0.06); border-color: rgba(0,255,179,0.25); }
+    .mc-f:hover { background: rgba(57,255,20,0.06); border-color: rgba(57,255,20,0.25); }
+    .mc-g:hover { background: rgba(255,107,53,0.08); border-color: rgba(255,107,53,0.3); }
+    /* Tag pills gain card accent color on parent hover */
+    .mc-a:hover .mc-tag { border-color: rgba(196,30,30,0.5); color: #f47272; }
+    .mc-b:hover .mc-tag { border-color: rgba(99,132,218,0.5); color: #8aaaf0; }
+    .mc-c:hover .mc-tag { border-color: rgba(255,229,92,0.45); color: #f0d85c; }
+    .mc-d:hover .mc-tag { border-color: rgba(0,245,255,0.4); color: #33f5ff; }
+    .mc-e:hover .mc-tag { border-color: rgba(0,255,179,0.4); color: var(--mint); }
+    .mc-f:hover .mc-tag { border-color: rgba(57,255,20,0.4); color: #7aff4d; }
+    .mc-g:hover .mc-tag { border-color: rgba(255,107,53,0.5); color: #ff8f5e; }
+    .mc-a { grid-column: span 4; grid-row: span 3; }
+    .mc-b { grid-column: span 3; grid-row: span 3; }
+    .mc-c { grid-column: span 5; grid-row: span 3; }
+    .mc-d { grid-column: span 6; grid-row: span 3; }
+    .mc-e { grid-column: span 6; grid-row: span 3; }
+    .mc-f { grid-column: span 4; grid-row: span 3; }
+    .mc-g { grid-column: span 8; grid-row: span 3; }
+
+    .mc-inner { padding: 10px 12px 0 12px; height: 100%; display: flex; flex-direction: column; }
+    .mc-label { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+    .mc-name { font-family: var(--font-head); font-size: 0.82rem; font-weight: 700; margin-bottom: 3px; }
+    .mc-desc { font-size: 0.65rem; color: var(--text-mid); line-height: 1.4; flex: 1; }
+    .mc-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; padding-top: 6px; }
+    .mc-tag { font-family: var(--font-mono); font-size: 0.55rem; padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); }
+    .mc-link {
+      position: absolute; top: 7px; right: 9px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: transparent;
+      pointer-events: none;
+      transition: color .2s var(--ease), transform .2s var(--ease);
+      transform: translate(5px, -5px);
+      line-height: 1;
+    }
+    .mc:hover .mc-link { color: var(--text); transform: translate(0,0); }
+    .mc-accent-bar { height: 3px; width: 100%; flex-shrink: 0; margin-top: 8px; margin-bottom: 5px; border-radius: 0 0 6px 6px; }
+
+    /* ════════════════════════════════════════════════
+       ENGINEERING
+    ════════════════════════════════════════════════ */
+    #engineering { padding: 120px 0; border-top: 1px solid var(--border); background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%); }
+    .engineering-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: start; }
+    .engineering-left h2 { font-family: var(--font-head); font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 22px; }
+    .engineering-left h2 em { font-style: normal; color: var(--blue); }
+    .engineering-left p { font-size: 0.92rem; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; max-width: 580px; }
+    .engineering-left p strong { color: var(--text); font-weight: 500; }
+    .resume-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; padding: 11px 20px; border: 1px solid rgba(79,158,255,0.3); border-radius: 3px; font-size: 0.78rem; font-weight: 600; color: var(--blue); transition: all .2s; }
+    .resume-btn:hover { background: rgba(79,158,255,0.08); border-color: var(--blue); }
+    .exp-item { padding: 18px 0; border-bottom: 1px solid var(--border); }
+    .exp-item:last-child { border-bottom: none; }
+    .exp-role { font-family: var(--font-head); font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+    .exp-company { font-size: 0.78rem; color: var(--blue); margin-bottom: 3px; }
+    .exp-period { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); margin-bottom: 8px; }
+    .exp-desc { font-size: 0.78rem; line-height: 1.6; color: var(--text-mid); }
+
+    /* ════════════════════════════════════════════════
+       CONNECT
+    ════════════════════════════════════════════════ */
+    #connect { padding: 120px 0; border-top: 1px solid var(--border); text-align: center; }
+    .connect-inner { max-width: 580px; margin: 0 auto; }
+    #connect h2 { font-family: var(--font-head); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 18px; }
+    #connect h2 em { font-style: normal; color: var(--mint); }
+    #connect p { font-size: 0.95rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 36px; }
+    .connect-links { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .connect-link { display: flex; align-items: center; gap: 8px; padding: 12px 22px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.82rem; font-weight: 600; color: var(--text-mid); transition: all .2s var(--ease); }
+    .connect-link:hover { border-color: rgba(255,255,255,0.3); color: var(--text); background: var(--surface); transform: translateY(-2px); }
+    .connect-link.linkedin:hover { border-color: #0A66C2; color: #0A66C2; }
+    .connect-link.email:hover { border-color: var(--mint); color: var(--mint); }
+
+    /* ════════════════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════════════════ */
+    footer { border-top: 1px solid var(--border); padding: 28px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+    .footer-logo { font-family: var(--font-head); font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; }
+    .footer-logo span { color: var(--mint); }
+    .footer-copy { font-size: 0.68rem; color: var(--text-dim); font-family: var(--font-mono); }
+    .footer-nav { display: flex; gap: 22px; list-style: none; }
+    .footer-nav a { font-size: 0.72rem; color: var(--text-dim); transition: color .2s; }
+    .footer-nav a:hover { color: var(--text-mid); }
+
+    /* ════════════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .hero-outer { grid-template-columns: 1fr; }
+      .hero-code-float { display: none; }
+      .work-entry { grid-template-columns: 1fr; gap: 24px; }
+      .engineering-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .nav-links.open { display: flex; flex-direction: column; position: fixed; inset: 0; top: var(--nav-h); background: var(--bg); padding: 40px 24px; gap: 20px; font-size: 1.2rem; z-index: 499; }
+      .mobile-menu-btn { display: block; }
+      .hero-outer { padding: 0 20px; grid-template-columns: 1fr; }
+      .about-grid { grid-template-columns: 1fr; gap: 40px; }
+      .about-right { padding-top: 0; }
+      .tl-rail { display: none; }
+      .work-entry { padding: 32px 0; }
+      .mosaic-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 80px; }
+      .mc-a,.mc-b,.mc-c,.mc-d,.mc-e,.mc-f,.mc-g { grid-column: span 2; grid-row: span 3; }
+      footer { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
+      .footer-nav { flex-wrap: wrap; gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a class="nav-logo" href="#" title="Kevin Maresca">K<span>.</span>M</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about"  class="nav-link">About</a></li>
+    <li><a href="#work"   class="nav-link">Journey</a></li>
+    <li><a href="#mosaic" class="nav-link">Projects</a></li>
+    <li><a href="#engineering" class="nav-link">Engineering</a></li>
+    <li><a href="#connect" class="nav-link">Connect</a></li>
+  </ul>
+  <a class="nav-cta" href="#connect">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    Get in touch
+  </a>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-outer">
+    <!-- Left: all text content -->
+    <div class="hero-inner">
+      <div class="hero-eyebrow reveal">
+        <span class="hero-eyebrow-dot"></span>
+        Engineer · Self-Taught Developer
+      </div>
+      <h1 class="hero-name reveal reveal-delay-1">
+        <span>Hybrid</span><br>
+        <span class="line2">Engineer</span>
+      </h1>
+      <div class="hero-title-row reveal reveal-delay-2">
+        <span class="hero-title">Mechanical Engineering</span>
+        <span class="hero-title-sep"></span>
+        <span class="hero-title">Power Systems</span>
+        <span class="hero-title-sep"></span>
+        <span class="hero-title">Self-Taught Dev</span>
+      </div>
+      <p class="hero-desc reveal reveal-delay-3">
+        Earned a Mechanical Engineering degree in 2021, spent half a decade working in <strong>power engineering and energy markets</strong>.
+      </p>
+      <p class="hero-desc reveal reveal-delay-3">
+        Two years ago, I picked up a text editor. What started as curiosity became
+        a <strong>second discipline</strong>, see what I've built below.
+      </p>
+      <div class="hero-actions reveal reveal-delay-3">
+        <a href="#work" class="btn btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          The Journey
+        </a>
+        <a href="#engineering" class="btn btn-outline">Engineering Background</a>
+        <a href="#connect" class="btn btn-outline">Get in touch</a>
+      </div>
+      <div class="hero-stats reveal reveal-delay-4">
+        <div class="hero-stat">
+          <div class="hero-stat-num" data-target="7">0<span>+</span></div>
+          <div class="hero-stat-label">Projects shipped</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num" data-target="2">0<span>+</span></div>
+          <div class="hero-stat-label">Years building</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num" data-target="5">0<span>+</span></div>
+          <div class="hero-stat-label">Years in engineering</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: animated code float — grid item, no absolute pos -->
+    <div class="hero-code-float reveal-right">
+      <div class="hcf-bar">
+        <div class="hcf-dot" style="background:#ff5f57"></div>
+        <div class="hcf-dot" style="background:#febc2e"></div>
+        <div class="hcf-dot" style="background:#28c840"></div>
+        <span class="hcf-filename" id="codeFilename">DataManager.js</span>
+      </div>
+      <div class="hcf-body" id="codeBody">
+        <!-- snippets injected by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ABOUT ══════════════════════════════════════════════ -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-left">
+        <div class="section-tag reveal">About me</div>
+        <h2 class="reveal reveal-delay-1">Multi-Faceted<br><em>Innovation</em></h2>
+        <p class="reveal reveal-delay-2">I'm a <strong>mechanical engineer</strong> by training, with five years mastering power systems, energy markets, and grid operations. <strong>A mix of program management, electrical, and civil engineering</strong>. I can read a one-line diagram the way most people read a menu.</p>
+        <p class="reveal reveal-delay-2">Ever since graduating college, I've made it a habit to <strong>stay curious</strong> by learning outside of work. Animation, day-trading, renewables...eventually I decided to pick up coding.</p>
+        <p class="reveal reveal-delay-3">Always a creative, mostly through drawing, <strong>I found coding to be a beautiful way to merge my STEM background with my passion for creating.</strong></p>
+
+      </div>
+      <div class="about-right">
+        <div class="skill-category reveal">
+          <div class="skill-category-label">Engineering</div>
+          <div class="skill-pills">
+            <span class="pill eng">Power Systems</span><span class="pill eng">Dynamics</span><span class="pill eng">Instrumentation</span><span class="pill eng">Finite Element Analysis</span><span class="pill eng">Design</span><span class="pill eng">Mech. Engineering</span><span class="pill eng">Mathematics</span><span class="pill eng">Thermodynamics</span><span class="pill eng">Differential Equations</span><span class="pill eng">SCADA</span><span class="pill eng">Structural Analysis</span>
+          </div>
+        </div>
+        <div class="skill-category reveal reveal-delay-1">
+          <div class="skill-category-label">Development</div>
+          <div class="skill-pills">
+            <span class="pill code">HTML &amp; CSS</span><span class="pill code">JavaScript</span><span class="pill code">Node.js</span><span class="pill code">Vanilla Architecture</span><span class="pill code">jsPDF</span><span class="pill code">SheetJS / XLSX</span><span class="pill code">Canvas API</span><span class="pill code">IntersectionObserver</span><span class="pill code">REST APIs</span><span class="pill code">Express.js</span>
+          </div>
+        </div>
+        <div class="skill-category reveal reveal-delay-2">
+          <div class="skill-category-label">Tools</div>
+          <div class="skill-pills">
+            <span class="pill">Git &amp; GitHub</span><span class="pill">Power BI</span><span class="pill">VS Code</span><span class="pill">Vite</span><span class="pill">Neon</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ JOURNEY + PROJECTS (merged vertical) ════════════ -->
+<section id="work">
+  <div class="container">
+    <div class="work-header">
+      <div class="section-tag reveal">Journey &amp; Work</div>
+      <h2 class="reveal reveal-delay-1">From grid engineer<br>to <em>product builder</em>.</h2>
+      <p class="reveal reveal-delay-2">Every project was made to practice skills I was learning, making the next one possible. Scroll through the timeline, each milestone is something I shipped.</p>
+    </div>
+
+      <div class="work-body">
+      <!-- Rail: absolutely positioned left of the container text -->
+      <div class="tl-rail">
+        <div class="tl-rail-line"></div>
+        <div class="tl-rail-sticky">
+          <div class="tl-year-marker" data-year="2024" id="ym-2024">
+            <span class="tl-year-num">2024</span>
+            <span class="tl-year-dot"></span>
+          </div>
+          <div class="tl-year-marker" data-year="2025" id="ym-2025">
+            <span class="tl-year-num">2025</span>
+            <span class="tl-year-dot"></span>
+          </div>
+          <div class="tl-year-marker" data-year="2026" id="ym-2026">
+            <span class="tl-year-num">2026</span>
+            <span class="tl-year-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entries — full container width, no indent -->
+      <div class="work-entries">
+
+        <!-- OdinProject -->
+        <div class="work-entry" data-year="2024">
+          <div class="we-left">
+            <span class="we-year-badge">Mar 2024 · The Start</span>
+            <div class="we-title">The Odin Project</div>
+            <div class="we-subtitle">HTML · CSS · Vanilla JS · DOM</div>
+            <p class="we-desc">Where it started. Worked through The Odin Project's full curriculum and built exercises from scratch to understand the DOM, box model, event handling, and JavaScript at a structural level. The first live project I shipped was a <strong>workout tracker</strong> — a real, deployed app with a clean UI, form handling, and local state. Every project after this was built on what I learned here.</p>
+            <div class="we-tags"><span class="we-tag">HTML</span><span class="we-tag">CSS</span><span class="we-tag">JavaScript</span><span class="we-tag">DOM</span><span class="we-tag">Forms</span><span class="we-tag">Local State</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/odin_workouts/" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" id="prev-odin" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/odin_workouts/','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/odin_workouts/" title="Odin Workouts" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback" id="fb-odin">
+                <div class="preview-art pa-odin">
+                  <div class="pa-odin-grid" style="height:100%">
+                    <div class="pa-odin-sidebar">
+                      <div class="pa-odin-nav-item a"></div>
+                      <div class="pa-odin-nav-item"></div><div class="pa-odin-nav-item"></div><div class="pa-odin-nav-item"></div><div class="pa-odin-nav-item"></div>
+                    </div>
+                    <div class="pa-odin-main">
+                      <div class="pa-odin-h"></div>
+                      <div class="pa-odin-line"></div><div class="pa-odin-line" style="width:80%"></div><div class="pa-odin-line" style="width:90%"></div>
+                      <div style="display:flex;gap:6px;margin-top:8px">
+                        <div style="flex:1;height:32px;background:rgba(99,132,218,0.08);border:1px solid rgba(99,132,218,0.15);border-radius:3px"></div>
+                        <div style="flex:1;height:32px;background:rgba(99,132,218,0.08);border:1px solid rgba(99,132,218,0.15);border-radius:3px"></div>
+                        <div style="flex:1;height:32px;background:rgba(99,132,218,0.08);border:1px solid rgba(99,132,218,0.15);border-radius:3px"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Georgetown Auto -->
+        <div class="work-entry" data-year="2024">
+          <div class="we-left">
+            <span class="we-year-badge">Jun 2024 · First Client</span>
+            <div class="we-title">Georgetown Auto</div>
+            <div class="we-subtitle">HTML · CSS · JS · Real Client</div>
+            <p class="we-desc">First production site for a real client; Georgetown Auto, a DC auto shop. <strong>Multi-page layout, mobile nav, contact form, booking modal, Google Maps embed, and service pages</strong>. This site was built and sold to the client, but served as good practice for my newly acquired front-end skills.</p>
+            <div class="we-tags"><span class="we-tag">HTML</span><span class="we-tag">CSS</span><span class="we-tag">JavaScript</span><span class="we-tag">Client Work</span><span class="we-tag">Forms</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/Georgetown_Auto_2026/" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" id="prev-ga" data-href="https://beastly585.github.io/Georgetown_Auto_2026/" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/Georgetown_Auto_2026/','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/Georgetown_Auto_2026/" title="Georgetown Auto" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback" id="fb-ga">
+                <div class="preview-art pa-ga">
+                  <div class="pa-ga-nav">
+                    <div class="pa-ga-logo"></div>
+                    <div class="pa-ga-navitem"></div><div class="pa-ga-navitem"></div><div class="pa-ga-navitem"></div>
+                  </div>
+                  <div class="pa-ga-hero" style="padding:10px">
+                    <div class="pa-ga-badge">GEORGETOWN AUTO SERVICE</div>
+                    <div style="font-family:var(--font-mono);font-size:0.48rem;color:rgba(255,255,255,0.4);margin-top:5px">(202) 965-3123 · Alexandria, VA</div>
+                  </div>
+                  <div class="pa-ga-cards">
+                    <div class="pa-ga-card"></div><div class="pa-ga-card"></div><div class="pa-ga-card"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post-It-Que -->
+        <div class="work-entry" data-year="2024">
+          <div class="we-left">
+            <span class="we-year-badge">Late 2024 · Vanilla JS</span>
+            <div class="we-title">Post-It-Qué</div>
+            <div class="we-subtitle">Vanilla JS · LocalStorage · Rich Text</div>
+            <p class="we-desc">Sticky notes app with a Windows 95 retro aesthetic. <strong>Multi-board tabs with drag-to-reorder, rich text toolbar (B/I/U + bullets + indent), HSL color picker with 12 presets, live debounced search, and full LocalStorage persistence</strong>. First app with real state management and no framework.</p>
+            <div class="we-tags"><span class="we-tag">Vanilla JS</span><span class="we-tag">LocalStorage</span><span class="we-tag">Rich Text</span><span class="we-tag">DOM State</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/Post-It-Que/" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" id="prev-piq" data-href="https://beastly585.github.io/Post-It-Que/" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/Post-It-Que/','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/Post-It-Que/" title="Post-It-Que" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback" id="fb-piq">
+                <div class="preview-art pa-piq">
+                  <div class="pa-piq-sidebar"></div>
+                  <div class="pa-piq-board" style="flex:1;position:relative;overflow:hidden;padding:8px">
+                    <div class="pa-piq-note" style="background:#FFE55C;top:5px;left:5px;transform:rotate(-2deg);width:60px;height:60px">
+                      <div class="pa-piq-noteline"></div><div class="pa-piq-noteline s"></div><div class="pa-piq-noteline"></div>
+                    </div>
+                    <div class="pa-piq-note" style="background:#FF7EB9;top:15px;left:70px;transform:rotate(1.5deg);width:58px;height:58px">
+                      <div class="pa-piq-noteline"></div><div class="pa-piq-noteline s"></div>
+                    </div>
+                    <div class="pa-piq-note" style="background:#7EC8FF;top:6px;left:135px;transform:rotate(-1deg);width:56px;height:56px">
+                      <div class="pa-piq-noteline"></div><div class="pa-piq-noteline"></div><div class="pa-piq-noteline s"></div>
+                    </div>
+                    <div class="pa-piq-note" style="background:#A8FFB0;top:55px;left:38px;transform:rotate(2deg);width:54px;height:54px">
+                      <div class="pa-piq-noteline s"></div><div class="pa-piq-noteline"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CoolMath -->
+        <div class="work-entry" data-year="2024">
+          <div class="we-left">
+            <span class="we-year-badge">Late 2024 · Canvas API</span>
+            <div class="we-title">CoolMath Arcade</div>
+            <div class="we-subtitle">Canvas API · Game Loop · Mobile Swipe</div>
+            <p class="we-desc">Five Canvas API games in one arcade cabinet UI <strong>Snake, Flappy Bird, Breakout, Tetris, and Asteroids</strong>. Delta-time game loop, keyboard nav, mobile swipe gesture detection, difficulty scaling. First time touching the Canvas API.</p>
+            <div class="we-tags"><span class="we-tag">Canvas API</span><span class="we-tag">requestAnimationFrame</span><span class="we-tag">Touch Events</span><span class="we-tag">Game Design</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/CoolMathGames/" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" id="prev-cmg" data-href="https://beastly585.github.io/CoolMathGames/" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/CoolMathGames/','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/CoolMathGames/" title="CoolMath Arcade" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback" id="fb-cmg">
+                <div class="preview-art pa-cmg">
+                  <div class="pa-cmg-cab">
+                    <div class="pa-cmg-marquee"><span class="pa-cmg-mtext">ARCADE</span></div>
+                    <div class="pa-cmg-screen">
+                      <div class="pa-cmg-px" style="top:18px;left:28px;background:#00f5ff"></div>
+                      <div class="pa-cmg-px" style="top:26px;left:36px;background:#00f5ff"></div>
+                      <div class="pa-cmg-px" style="top:18px;left:44px;background:#00f5ff"></div>
+                      <div class="pa-cmg-px" style="top:36px;left:20px;background:#ff00aa"></div>
+                      <div class="pa-cmg-px" style="top:10px;left:54px;background:#39ff14"></div>
+                      <div class="pa-cmg-px" style="top:44px;left:38px;background:#ffe600"></div>
+                      <div class="pa-cmg-px" style="top:22px;left:10px;background:#39ff14"></div>
+                      <div class="pa-cmg-px" style="top:22px;left:16px;background:#39ff14"></div>
+                      <div class="pa-cmg-px" style="top:16px;left:16px;background:#39ff14"></div>
+                    </div>
+                    <div class="pa-cmg-btns">
+                      <div class="pa-cmg-btn" style="background:#ff00aa"></div>
+                      <div class="pa-cmg-btn" style="background:#00f5ff"></div>
+                    </div>
+                  </div>
+                  <div class="pa-cmg-games">
+                    <div class="pa-cmg-game" style="color:rgba(0,245,255,0.7)">🐍 SNAKE</div>
+                    <div class="pa-cmg-game" style="color:rgba(255,230,0,0.7)">🐦 FLAPPY</div>
+                    <div class="pa-cmg-game" style="color:rgba(57,255,20,0.7)">🧱 BREAKOUT</div>
+                    <div class="pa-cmg-game" style="color:rgba(255,0,170,0.7)">🟦 TETRIS</div>
+                    <div class="pa-cmg-game" style="color:rgba(191,0,255,0.7)">🚀 ASTEROIDS</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WattSure -->
+        <div class="work-entry" data-year="2025">
+          <div class="we-left">
+            <span class="we-year-badge orange">Mar 2025 · Energy + Code</span>
+            <div class="we-title">WattSure</div>
+            <div class="we-subtitle">Pepco Reliability · Outage Automation · Engineering Workflow</div>
+            <p class="we-desc">Built for <strong>Pepco Reliability Engineering</strong> to automate post-outage analysis and reporting that was previously performed entirely in Excel. Engineers sync OMS data; WattSure classifies events by severity, surfaces major outages, and generates structured reports with one click. My first project that required building a back-end and server to work with a front-end interface.</p>
+            <div class="we-tags"><span class="we-tag">Pepco</span><span class="we-tag">Outage Automation</span><span class="we-tag">Workflow</span><span class="we-tag">Engineering</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/WattSure/" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/WattSure/','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/WattSure/" title="WattSure" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback show">
+                <div class="preview-art pa-ws">
+                  <div class="pa-ws-kpis">
+                    <div class="pa-ws-kpi"><div class="pa-ws-val">$47.32</div><div class="pa-ws-lbl">Hub LMP</div></div>
+                    <div class="pa-ws-kpi"><div class="pa-ws-val">18.2 GW</div><div class="pa-ws-lbl">Load</div></div>
+                    <div class="pa-ws-kpi"><div class="pa-ws-val">+2.4%</div><div class="pa-ws-lbl" style="color:var(--mint)">Solar</div></div>
+                    <div class="pa-ws-kpi"><div class="pa-ws-val">3.1 GW</div><div class="pa-ws-lbl">Wind</div></div>
+                  </div>
+                  <div class="pa-ws-chart">
+                    <div class="pa-ws-bar" style="height:55%"></div>
+                    <div class="pa-ws-bar" style="height:70%"></div>
+                    <div class="pa-ws-bar" style="height:45%"></div>
+                    <div class="pa-ws-bar hi" style="height:85%"></div>
+                    <div class="pa-ws-bar" style="height:60%"></div>
+                    <div class="pa-ws-bar" style="height:75%"></div>
+                    <div class="pa-ws-bar" style="height:50%"></div>
+                    <div class="pa-ws-bar" style="height:65%"></div>
+                    <div class="pa-ws-bar" style="height:42%"></div>
+                    <div class="pa-ws-bar hi" style="height:90%"></div>
+                    <div class="pa-ws-bar" style="height:72%"></div>
+                    <div class="pa-ws-bar" style="height:58%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PowerTrader -->
+        <div class="work-entry" data-year="2026">
+          <div class="we-left">
+            <span class="we-year-badge orange">Apr 2026 · Trading</span>
+            <div class="we-title">PowerTrader</div>
+            <div class="we-subtitle">ERCOT · LMP Prediction · Day-Ahead · Morning Workflow</div>
+            <p class="we-desc">A tool built around <strong>LMP prediction for ERCOT day-ahead markets</strong>. Ingests real-time price signals, weather data, and generation dispatch logic to generate hub price forecasts — the same mental model I use when actually trading power, turned into an easy-to-use web application.</p>
+            <div class="we-tags"><span class="we-tag">ERCOT</span><span class="we-tag">LMP Prediction</span><span class="we-tag">Day-Ahead</span><span class="we-tag">Energy Trading</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/powerTrader2.0/portfolio.html" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" id="prev-pt" data-href="https://beastly585.github.io/powerTrader2.0/portfolio.html" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/powerTrader2.0/portfolio.html','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/powerTrader2.0/portfolio.html" title="PowerTrader" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback" id="fb-pt">
+                <div class="preview-art pa-pt">
+                  <div class="pa-pt-table">
+                    <div class="pa-pt-row h"><span>HUB</span><span>LMP</span><span>Δ</span><span>VOL</span></div>
+                    <div class="pa-pt-row up"><span>HB_NORTH</span><span class="up-c">$52.14</span><span class="up-c">+3.2%</span><span>14.2</span></div>
+                    <div class="pa-pt-row dn"><span>HB_WEST</span><span class="dn-c">$41.88</span><span class="dn-c">-1.7%</span><span>8.9</span></div>
+                    <div class="pa-pt-row up"><span>HB_SOUTH</span><span class="up-c">$58.30</span><span class="up-c">+5.1%</span><span>22.1</span></div>
+                    <div class="pa-pt-row"><span>HB_HOUSTON</span><span>$49.55</span><span>+0.3%</span><span>11.4</span></div>
+                    <div class="pa-pt-row dn"><span>LZ_LCRA</span><span class="dn-c">$44.20</span><span class="dn-c">-2.1%</span><span>6.7</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- InsiderTrader -->
+        <div class="work-entry" data-year="2026">
+          <div class="we-left">
+            <span class="we-year-badge orange">May 2026 · Most Recent</span>
+            <div class="we-title">InsiderTrader</div>
+            <div class="we-subtitle">Financial Markets · Real-Time Data · Position Tracking</div>
+            <p class="we-desc">Most recent project. <strong>Financial markets trading tool</strong> — real-time price feeds, position tracking, market data pipelines, and structured reporting. Built on everything learned from PowerTrader and the data architecture developed across the energy tools: correction diffs, audit trails, multi-format exports. The most polished UI of any project to date.</p>
+            <div class="we-tags"><span class="we-tag">Financial Markets</span><span class="we-tag">Real-Time</span><span class="we-tag">Architecture</span><span class="we-tag">Exports</span></div>
+            <div class="we-links">
+              <a href="https://beastly585.github.io/InsiderTrader/" target="_blank" class="we-link primary">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Live Site
+              </a>
+              <a href="https://github.com/beastly585" target="_blank" class="we-link">GitHub</a>
+            </div>
+          </div>
+          <div class="we-right">
+            <div class="we-preview" id="prev-it" data-href="https://beastly585.github.io/InsiderTrader/" style="cursor:pointer" onclick="window.open('https://beastly585.github.io/InsiderTrader/','_blank')">
+              <div class="we-preview-bar">
+                <div class="we-preview-dot" style="background:#ff5f57"></div>
+                <div class="we-preview-dot" style="background:#febc2e"></div>
+                <div class="we-preview-dot" style="background:#28c840"></div>
+                <div class="we-preview-url"></div>
+              </div>
+              <iframe src="https://beastly585.github.io/InsiderTrader/" title="InsiderTrader" sandbox="allow-scripts allow-same-origin" loading="lazy" onload="iframeLoaded(this)" onerror="iframeError(this)"></iframe>
+              <div class="we-preview-fallback" id="fb-it">
+                <div class="preview-art pa-pt" style="background:linear-gradient(135deg,#12070a,#1f0d12)">
+                  <div class="pa-pt-table">
+                    <div class="pa-pt-row h"><span>SYMBOL</span><span>PRICE</span><span>Δ</span><span>POS</span></div>
+                    <div class="pa-pt-row up"><span>AAPL</span><span class="up-c">$187.42</span><span class="up-c">+1.2%</span><span>100</span></div>
+                    <div class="pa-pt-row dn"><span>TSLA</span><span class="dn-c">$241.88</span><span class="dn-c">-2.4%</span><span>50</span></div>
+                    <div class="pa-pt-row up"><span>NVDA</span><span class="up-c">$875.30</span><span class="up-c">+3.8%</span><span>25</span></div>
+                    <div class="pa-pt-row"><span>SPY</span><span>$498.55</span><span>+0.1%</span><span>200</span></div>
+                    <div class="pa-pt-row dn"><span>QQQ</span><span class="dn-c">$421.20</span><span class="dn-c">-0.8%</span><span>75</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /work-entries -->
+    </div><!-- /work-body -->
+  </div>
+</section>
+
+<!-- ══ COMPACT MOSAIC ══════════════════════════════════ -->
+<section id="mosaic">
+  <div class="container">
+    <div class="mosaic-header reveal">
+      <h3>All <em>7 projects</em> at a glance</h3>
+    </div>
+    <div class="mosaic-grid">
+      <a href="https://beastly585.github.io/Georgetown_Auto_2026/" target="_blank" class="mc mc-a reveal">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2024 · Client</div>
+          <div class="mc-name">Georgetown Auto</div>
+          <div class="mc-desc">Multi-page business site for a DC auto shop. First real client.</div>
+          <div class="mc-tags"><span class="mc-tag">HTML</span><span class="mc-tag">CSS</span><span class="mc-tag">JS</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,#C41E1E,#8B0000)"></div>        </div>
+      </a>
+      <a href="https://beastly585.github.io/odin_workouts/" target="_blank" class="mc mc-b reveal reveal-delay-1">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2024 · Foundation</div>
+          <div class="mc-name">OdinProject</div>
+          <div class="mc-desc">Where it started. Full HTML/CSS/JS curriculum.</div>
+          <div class="mc-tags"><span class="mc-tag">Fundamentals</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,#6384DA,#4060A0)"></div>        </div>
+      </a>
+      <a href="https://beastly585.github.io/Post-It-Que/" target="_blank" class="mc mc-c reveal reveal-delay-2">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2024 · Vanilla JS</div>
+          <div class="mc-name">Post-It-Qué</div>
+          <div class="mc-desc">Sticky notes · LocalStorage · Rich text</div>
+          <div class="mc-tags"><span class="mc-tag">JS</span><span class="mc-tag">LocalStorage</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,#FFE55C,#FF7EB9,#7EC8FF)"></div>        </div>
+      </a>
+      <a href="https://beastly585.github.io/CoolMathGames/" target="_blank" class="mc mc-d reveal reveal-delay-1">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2024 · Canvas</div>
+          <div class="mc-name">CoolMath Arcade</div>
+          <div class="mc-desc">5 games in one cabinet — Snake, Flappy, Breakout, Tetris, Asteroids.</div>
+          <div class="mc-tags"><span class="mc-tag">Canvas API</span><span class="mc-tag">Game Loop</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,#00f5ff,#ff00aa,#39ff14)"></div>        </div>
+      </a>
+      <a href="https://beastly585.github.io/WattSure/" target="_blank" class="mc mc-e reveal reveal-delay-2">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2025 · Pepco</div>
+          <div class="mc-name">WattSure</div>
+          <div class="mc-desc">Outage report automation for Pepco Reliability Engineering.</div>
+          <div class="mc-tags"><span class="mc-tag">Pepco</span><span class="mc-tag">Workflow Automation</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,var(--mint),rgba(0,255,179,0.3))"></div>        </div>
+      </a>
+      <a href="https://beastly585.github.io/powerTrader2.0/portfolio.html" target="_blank" class="mc mc-f reveal reveal-delay-3">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2026 · Trading</div>
+          <div class="mc-name">PowerTrader</div>
+          <div class="mc-desc">ERCOT LMP prediction · day-ahead market forecasting.</div>
+          <div class="mc-tags"><span class="mc-tag">ERCOT</span><span class="mc-tag">LMP Prediction</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,#39ff14,rgba(57,255,20,0.3))"></div>        </div>
+      </a>
+      <a href="https://beastly585.github.io/InsiderTrader/" target="_blank" class="mc mc-g reveal">
+        <span class="mc-link">↗</span>
+        <div class="mc-inner">
+          <div class="mc-label">2026 · Most Recent</div>
+          <div class="mc-name">InsiderTrader</div>
+          <div class="mc-desc">Financial markets trading tool — real-time feeds, position tracking, structured reporting.</div>
+          <div class="mc-tags"><span class="mc-tag">Financial Markets</span><span class="mc-tag">Real-Time</span><span class="mc-tag">Exports</span></div>
+
+          <div class="mc-accent-bar" style="background:linear-gradient(90deg,var(--orange),rgba(255,107,53,0.3))"></div>        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ENGINEERING ══════════════════════════════════════ -->
+<section id="engineering">
+  <div class="container">
+    <div class="engineering-grid">
+      <div class="engineering-left">
+        <div class="section-tag reveal">Background</div>
+        <h2 class="reveal reveal-delay-1">My engineering<br><em>background</em>.</h2>
+        <p class="reveal reveal-delay-2">I started in parts and assembly design at <strong>Los Alamos National Laboratory</strong>, spending five years working on weapons systems. Tight tolerances, materials, and finite element analysis.</p>
+        <p class="reveal reveal-delay-2">During my final year at UNM, I picked up robotics work kinematics, linear algebra, 3D space modeling. Representing transforms in homogeneous coordinates, reasoning about how systems move through space, eventually running research for UNM Robotics Laboratory.</p>
+        <p class="reveal reveal-delay-3">For the past several years I've been in power engineering. Grid operations, reliability programs, data analysis, KPI development, program management. Starting off with days in the field, gritty designs (CAD, Inventory, Redlining); eventually moving to strategic roles; multi-million program management, complex failure analysis, high-level reporting.</p>
+        <a href="./Kevin_Maresca_Resume.pdf" target="_blank" rel="noopener" class="resume-btn reveal reveal-delay-3">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Download Engineering Resume
+        </a>
+      </div>
+      <div class="engineering-right">
+        <div class="exp-item reveal">
+          <div class="exp-role">Power Engineer — Energy Markets</div>
+          <div class="exp-company">ERCOT / Power Trading Operations</div>
+          <div class="exp-period">2020 — Present</div>
+          <div class="exp-desc">Energy market analysis, day-ahead and real-time dispatch, grid operations, hub price modeling, SCADA interface work, generation scheduling.</div>
+        </div>
+        <div class="exp-item reveal reveal-delay-1">
+          <div class="exp-role">B.S. Mechanical Engineering</div>
+          <div class="exp-company">Mathematics Minor</div>
+          <div class="exp-period">Engineering Foundations</div>
+          <div class="exp-desc">Thermodynamics, fluid mechanics, numerical methods, differential equations. The quantitative foundation that carries into every domain.</div>
+        </div>
+        <div class="exp-item reveal reveal-delay-2">
+          <div class="exp-role">Self-Directed Development</div>
+          <div class="exp-company">The Odin Project + 7 Shipped Products</div>
+          <div class="exp-period">2024 — Present</div>
+          <div class="exp-desc">HTML/CSS/JS fundamentals, then Node.js, browser-native APIs, vanilla application architecture. Everything learned by building real things.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONNECT ═══════════════════════════════════════════ -->
+<section id="connect">
+  <div class="container">
+    <div class="connect-inner">
+      <div class="section-tag reveal" style="justify-content:center">Get in touch</div>
+      <p class="reveal" style="font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--text-mid);letter-spacing:0.04em;margin-bottom:8px">Kevin Maresca</p>
+      <h2 class="reveal reveal-delay-1">Let's talk <em>shop</em>.</h2>
+      <p class="reveal reveal-delay-2">Whether it's a software engineering role, an energy-sector product, or just a conversation about building things at the intersection of power systems and code — I'm interested.</p>
+      <div class="connect-links reveal reveal-delay-3">
+        <a href="https://github.com/beastly585" target="_blank" class="connect-link">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          beastly585
+        </a>
+        <a href="https://linkedin.com/in/YOUR_HANDLE" target="_blank" class="connect-link linkedin">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          LinkedIn
+        </a>
+        <a href="mailto:your@email.com" class="connect-link email">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email Me
+        </a>
+        <a href="./Kevin_Maresca_Resume.pdf" target="_blank" rel="noopener" class="connect-link">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Resume
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo"><span style="color:var(--text)">Kevin Maresca</span> <span style="color:var(--text-dim);font-weight:400;letter-spacing:0.03em">/ K<span style="color:var(--mint)">.</span>M</span></div>
+  <ul class="footer-nav">
+    <li><a href="#about">About</a></li>
+    <li><a href="#work">Journey</a></li>
+    <li><a href="#mosaic">Projects</a></li>
+    <li><a href="#engineering">Engineering</a></li>
+    <li><a href="#connect">Connect</a></li>
+  </ul>
+  <div class="footer-copy">Built with vanilla JS · 2025</div>
+</footer>
+
+<script>
+'use strict';
+
+// ── Cursor ────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx=-100,my=-100,rx=-100,ry=-100;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function animCursor(){
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
+})();
+document.querySelectorAll('a,button,.mc,.work-entry').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    cursor.style.width='14px'; cursor.style.height='14px';
+    ring.style.width='48px'; ring.style.height='48px';
+    ring.style.borderColor='rgba(0,255,179,0.6)';
+  });
+  el.addEventListener('mouseleave',()=>{
+    cursor.style.width='8px'; cursor.style.height='8px';
+    ring.style.width='32px'; ring.style.height='32px';
+    ring.style.borderColor='rgba(0,255,179,0.4)';
+  });
+});
+
+// ── Nav ───────────────────────────────────────────────────
+const nav = document.getElementById('mainNav');
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section[id]');
+const onScroll = ()=>{
+  nav.classList.toggle('scrolled', window.scrollY>40);
+  let cur='';
+  sections.forEach(s=>{ if(window.scrollY>=s.offsetTop-140) cur=s.id; });
+  navLinks.forEach(l=>l.classList.toggle('active', l.getAttribute('href')==='#'+cur));
+};
+window.addEventListener('scroll',onScroll,{passive:true});
+onScroll();
+
+// Mobile menu
+const mBtn = document.getElementById('mobileMenuBtn');
+const nLinks = document.getElementById('navLinks');
+mBtn.addEventListener('click',()=>{
+  nLinks.classList.toggle('open');
+  mBtn.textContent = nLinks.classList.contains('open') ? '✕' : '☰';
+});
+nLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+  nLinks.classList.remove('open'); mBtn.textContent='☰';
+}));
+
+// ── Scroll reveal (general) ───────────────────────────────
+const revObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('visible');revObs.unobserve(e.target);} });
+},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal,.reveal-right').forEach(el=>revObs.observe(el));
+
+// ── Work entries — scroll into view ──────────────────────
+const entObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in-view'); entObs.unobserve(e.target); }
+  });
+},{threshold:.15,rootMargin:'0px 0px -80px 0px'});
+document.querySelectorAll('.work-entry').forEach(el=>entObs.observe(el));
+
+// ── Timeline year highlighter ─────────────────────────────
+const yearMarkers = document.querySelectorAll('.tl-year-marker');
+const entryEls    = document.querySelectorAll('.work-entry');
+const yearObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const yr = e.target.dataset.year;
+      yearMarkers.forEach(m=>m.classList.toggle('active', m.dataset.year===yr));
+    }
+  });
+},{threshold:.4});
+entryEls.forEach(el=>yearObs.observe(el));
+
+// ── Counter animation ─────────────────────────────────────
+const counters = document.querySelectorAll('.hero-stat-num[data-target]');
+const cntObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const el = e.target;
+    const target = parseInt(el.dataset.target);
+    const suffix = el.querySelector('span')?.textContent||'';
+    let v=0;
+    const step = ()=>{
+      v = Math.min(v+1, target);
+      el.innerHTML = v + `<span>${suffix}</span>`;
+      if(v<target) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    cntObs.unobserve(el);
+  });
+},{threshold:.5});
+counters.forEach(c=>cntObs.observe(c));
+
+// ── Typewriter animation for code float ──────────────────
+// Each snippet is an array of lines; each line is an array of [cssClass|null, text] pairs.
+const TW_SNIPPETS = [
+  { filename:'DataManager.js', lines:[
+    [['c-comment','// OMS outage session pipeline']],
+    [['c-kw','class '],['c-fn','DataManager'],[null,' {']],
+    [['c-kw','  static '],['c-fn','classify'],[null,'(outage) {']],
+    [[null,'    '],['c-kw','const '],['c-dim','{ CI, CMI } = outage;']],
+    [[null,'    '],['c-kw','if '],['c-dim','(CI >= '],['c-num','500'],['c-dim',') '],['c-kw','return '],['c-mint',"'major';"]],
+    [[null,'    '],['c-kw','if '],['c-dim','(CMI >= '],['c-num','4500'],['c-dim',') '],['c-kw','return '],['c-mint',"'hybrid';"]],
+    [[null,'    '],['c-kw','return '],['c-str',"'minor';"],[null,' }']],
+    [[null,'}']],
+  ]},
+  { filename:'SnakeGame.js', lines:[
+    [['c-comment','// Delta-time loop — CoolMath Arcade']],
+    [['c-kw','function '],['c-fn','makeSnake'],['c-dim','() {']],
+    [['c-kw','  let '],['c-dim','snake = [{ x:'],['c-num','10'],['c-dim',', y:'],['c-num','10'],['c-dim',' }];']],
+    [['c-kw','  let '],['c-dim','dir = { x:'],['c-num','1'],['c-dim',', y:'],['c-num','0'],['c-dim',' };']],
+    [['c-kw','  return '],['c-dim','{']],
+    [['c-fn','    update'],['c-dim','(dt) {']],
+    [[null,'      timer += dt * DIFF;']],
+    [['c-kw','      if '],['c-dim','(timer < '],['c-num','0.12'],['c-dim',') '],['c-kw','return;']],
+    [[null,'      timer = '],['c-num','0;']],
+    [[null,'    },']],
+    [[null,'  };']],
+    [[null,'}']],
+  ]},
+  { filename:'IMAManager.js', lines:[
+    [['c-comment','// Correction audit trail — GridWatch']],
+    [['c-kw','class '],['c-fn','IMAManager'],['c-dim',' {']],
+    [['c-fn','  setCorrection'],['c-dim','(id, field, orig, corr) {']],
+    [['c-kw','    if '],['c-dim','(!this.corrections[id])']],
+    [['c-dim','      this.corrections[id] = {};']],
+    [['c-kw','    if '],['c-dim','(String(corr) === String(orig))']],
+    [['c-kw','      delete '],['c-dim','this.corrections[id][field];']],
+    [['c-kw','    else']],
+    [['c-dim','      this.corrections[id][field]']],
+    [['c-dim','        = { original: orig, corrected: corr };']],
+    [[null,'  }']],
+    [[null,'}']],
+  ]},
+  { filename:'PDFExporter.js', lines:[
+    [['c-comment','// In-browser PDF — no server needed']],
+    [['c-kw','class '],['c-fn','PDFExporter'],['c-dim',' {']],
+    [['c-fn','  static '],['c-fn','openInTab'],['c-dim','(event) {']],
+    [['c-kw','    const '],['c-dim','doc = '],['c-fn','buildDoc'],['c-dim','(event);']],
+    [['c-kw','    const '],['c-dim','blob = doc.'],['c-fn','output'],['c-dim',"('blob');"]],
+    [['c-kw','    const '],['c-dim','url = URL.'],['c-fn','createObjectURL'],['c-dim','(blob);']],
+    [['c-dim','    window.'],['c-fn','open'],['c-dim',"(url, '_blank');"]],
+    [['c-fn','    setTimeout'],['c-dim','(() =>']],
+    [['c-dim','      URL.'],['c-fn','revokeObjectURL'],['c-dim','(url), '],['c-num','60000']],
+    [[null,'    );']],
+    [[null,'  }']],
+    [[null,'}']],
+  ]}
+];
+
+(function initTypewriter() {
+  const body = document.getElementById('codeBody');
+  const fname = document.getElementById('codeFilename');
+  if (!body || !fname) return;
+
+  let si=0, li=0, ti=0, ci=0;
+  let phase='typing'; // typing | pause | highlight | deleting
+  let lineEls=[], curLineEl=null, curSpan=null;
+
+  function reset(idx) {
+    body.innerHTML=''; lineEls=[]; curLineEl=null; curSpan=null;
+    li=0; ti=0; ci=0; phase='typing';
+    fname.style.opacity='0';
+    setTimeout(()=>{ fname.textContent=TW_SNIPPETS[idx].filename; fname.style.opacity='1'; },180);
+  }
+
+  function tick() {
+    const snip = TW_SNIPPETS[si];
+    if (phase==='typing') {
+      if (li>=snip.lines.length) { phase='pause'; setTimeout(tick,2000); return; }
+      const tokLine = snip.lines[li];
+      if (ti===0 && ci===0) {
+        curLineEl=document.createElement('div');
+        curLineEl.style.whiteSpace='pre';
+        body.appendChild(curLineEl);
+        lineEls.push(curLineEl);
+      }
+      if (ti>=tokLine.length) { li++; ti=0; ci=0; setTimeout(tick,20); return; }
+      const [cls,txt] = tokLine[ti];
+      if (ci===0) { curSpan=document.createElement('span'); if(cls) curSpan.className=cls; curLineEl.appendChild(curSpan); }
+      curSpan.textContent += txt[ci];
+      ci++;
+      if (ci>=txt.length) { ti++; ci=0; if(ti>=tokLine.length){li++;ti=0;} }
+      setTimeout(tick, 12+Math.random()*10);
+
+    } else if (phase==='pause') {
+      lineEls.forEach(el=>{el.style.background='rgba(0,255,179,0.1)';el.style.borderRadius='2px';});
+      phase='highlight'; setTimeout(tick,650);
+
+    } else if (phase==='highlight') {
+      lineEls.forEach(el=>{el.style.background='';});
+      phase='deleting'; setTimeout(tick,100);
+
+    } else if (phase==='deleting') {
+      if (!lineEls.length) {
+        si=(si+1)%TW_SNIPPETS.length; reset(si); setTimeout(tick,350);
+      } else {
+        const last=lineEls[lineEls.length-1];
+        const spans=last.querySelectorAll('span');
+        let done=false;
+        for(let i=spans.length-1;i>=0;i--){
+          if(spans[i].textContent.length>0){
+            spans[i].textContent=spans[i].textContent.slice(0,-1);
+            if(!spans[i].textContent) spans[i].remove();
+            done=true; break;
+          }
+        }
+        if(!done){last.remove();lineEls.pop();}
+        setTimeout(tick,5);
+      }
+    }
+  }
+
+  fname.textContent=TW_SNIPPETS[0].filename;
+  setTimeout(tick,900);
+})();
+
+// ── Iframe fallback helpers ───────────────────────────────
+// Defined on window so inline onload/onerror attributes can reach them.
+window.iframeLoaded = function(iframe) {
+  const fb = iframe.closest('.we-preview')?.querySelector('.we-preview-fallback');
+  if (fb) fb.classList.remove('show');
+};
+window.iframeError = function(iframe) {
+  const fb = iframe.closest('.we-preview')?.querySelector('.we-preview-fallback');
+  if (fb) fb.classList.add('show');
+};
+// Timeout fallback — show CSS art if iframe takes > 5s
+document.querySelectorAll('.we-preview iframe').forEach(iframe => {
+  const t = setTimeout(() => {
+    const fb = iframe.closest('.we-preview')?.querySelector('.we-preview-fallback');
+    if (fb && !fb.classList.contains('show')) fb.classList.add('show');
+  }, 5000);
+  iframe.addEventListener('load', () => clearTimeout(t));
+});
+
+// ── Code float load animation ─────────────────────────────
+window.addEventListener('load', () => {
+  const f = document.querySelector('.hero-code-float');
+  if (f) {
+    f.style.opacity = '0';
+    f.style.transform = 'rotate(1.5deg) translateY(16px)';
+    f.style.transition = 'opacity .8s .3s var(--ease), transform .8s .3s var(--ease)';
+    setTimeout(() => { f.style.opacity = '0.88'; f.style.transform = 'rotate(1.5deg) translateY(0)'; }, 80);
+  }
+});
+
+</script>
+
+</body>
+</html>
